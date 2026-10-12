@@ -43,6 +43,68 @@ export function HelpSheet({ visible, onClose }: Base) {
   );
 }
 
+function Numbers({ stats, daily }: { stats: ModeStats; daily: boolean }) {
+  const p = usePalette();
+  const avg = stats.chutes.length ? stats.chutes.reduce((a, b) => a + b, 0) / stats.chutes.length : 0;
+  const items = [
+    { value: String(stats.played), label: 'jogos' },
+    { value: stats.played ? `${Math.round((stats.wins / stats.played) * 100)}%` : '–', label: 'vitórias' },
+    { value: avg ? avg.toFixed(1).replace('.', ',') : '–', label: 'média de chutes' },
+    { value: String(stats.streak), label: daily ? 'dias seguidos' : 'em sequência' },
+  ];
+  return (
+    <View style={styles.numbers}>
+      {items.map((it) => (
+        <View key={it.label} style={styles.number}>
+          <Text style={[styles.bigNumber, { color: p.fg }]}>{it.value}</Text>
+          <Text style={[styles.numberLabel, { color: p.muted }]}>{it.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function Distribution({ stats, highlight }: { stats: ModeStats; highlight?: number }) {
+  const p = usePalette();
+  const counts = BUCKETS.map((b) => stats.chutes.filter((c) => c >= b.min && c <= b.max).length);
+  const max = Math.max(1, ...counts);
+  return (
+    <View style={styles.dist}>
+      <Text style={[styles.caption, { color: p.muted }]}>CHUTES POR VITÓRIA</Text>
+      {BUCKETS.map((b, i) => {
+        const active = highlight !== undefined && highlight >= b.min && highlight <= b.max;
+        return (
+          <View key={b.label} style={styles.distRow}>
+            <Text style={[styles.distLabel, { color: p.fg }]}>{b.label}</Text>
+            <View style={styles.distTrack}>
+              <View
+                style={[
+                  styles.distBar,
+                  { flex: counts[i] / max, backgroundColor: active ? p.hit : p.miss, minWidth: 28 },
+                ]}
+              >
+                <Text style={[styles.distCount, { color: active ? p.hitFg : p.missFg }]}>{counts[i]}</Text>
+              </View>
+              <View style={{ flex: 1 - counts[i] / max }} />
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+export function StatsSheet({ visible, onClose, stats, daily }: Base & { stats: ModeStats; daily: boolean }) {
+  const p = usePalette();
+  return (
+    <Sheet visible={visible} title={daily ? 'Estatísticas · Do dia' : 'Estatísticas · Livre'} onClose={onClose}>
+      <Numbers stats={stats} daily={daily} />
+      <Text style={[styles.text, { color: p.muted }]}>Recorde de sequência: {stats.best}</Text>
+      <Distribution stats={stats} />
+    </Sheet>
+  );
+}
+
 const styles = StyleSheet.create({
   text: { fontSize: 16, lineHeight: 23 },
   strong: { fontFamily: fonts.bold },

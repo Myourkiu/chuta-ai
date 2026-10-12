@@ -53,6 +53,14 @@ export function newDailyGame(day = dayNumber()): Game {
   return { mode: 'daily', day, answer: DAILY_ORDER[((day % len) + len) % len], guesses: [], status: 'playing' };
 }
 
+export function newFreeGame(exclude?: string): Game {
+  let answer: string;
+  do {
+    answer = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
+  } while (answer === exclude && ANSWERS.length > 1);
+  return { mode: 'free', day: 0, answer, guesses: [], status: 'playing' };
+}
+
 export function score(guess: string, answer: string): Mark[] {
   const marks: Mark[] = Array(5).fill('miss');
   const left: Record<string, number> = {};

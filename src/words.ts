@@ -63,6 +63,16 @@ vindo feita visto fazem digam dizem fosse faria podia devia iria altos baixa che
 magra azuis olhos unhas costa memes reais leões anéis cores pães mães irmãs
 `;
 
+// Palavras de 4 letras: os plurais delas (com "s") também valem como chute.
+const FOUR_RAW = `
+agua alma arte bolo cabo cama casa caro dado dama dedo dose faca fada fato feio fogo foto frio gato gelo gola
+gota hora ilha joia jogo lado lago lata lixo lobo loja luta luva mala mapa mato meia mesa mito moda modo mola
+nave neve nome nota novo olho onda osso pato pena peso poço polo pote raio rato rede rima roda rosa rota sala
+sapo seda selo sopa taça teia teto tipo tubo urso vaca vaso vela vida voto mano mina pino bola copo boca rabo
+rico sujo puro raro duro belo cara coxa dica doce fila fita gema hino jato leve lima lona lote peça pele pera
+pipa saco seca seco sede sino taxa tela tema time toca vale vara vila zona dona dono fone pipa pato rodo bico
+`;
+
 const ACCENTS: Record<string, string> = {
   á: 'a', à: 'a', â: 'a', ã: 'a', ä: 'a',
   é: 'e', è: 'e', ê: 'e', ë: 'e',
@@ -100,6 +110,12 @@ for (const w of list(EXTRA_RAW)) {
   if (!isWord(n, 5)) continue;
   VALID.add(n);
   if (!accented.has(n)) accented.set(n, w.toLowerCase());
+}
+
+for (const w of list(FOUR_RAW)) {
+  const n = normalize(w);
+  if (!isWord(n, 4) || !/[aeiou]$/.test(n)) continue;
+  VALID.add(n + 's');
 }
 
 /** Letras para exibir num chute já enviado, com acentos quando a palavra é conhecida. */

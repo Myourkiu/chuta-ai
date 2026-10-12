@@ -105,6 +105,59 @@ export function StatsSheet({ visible, onClose, stats, daily }: Base & { stats: M
   );
 }
 
+function useCountdown(active: boolean) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [active]);
+  const s = Math.floor(msUntilMidnight() / 1000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+}
+
+type EndProps = Base & {
+  game: Game;
+  stats: ModeStats;
+  onShare: () => void;
+  onNewWord: () => void;
+  onPlayFree: () => void;
+};
+
+export function EndSheet({ visible, onClose, game, stats, onShare, onNewWord, onPlayFree }: EndProps) {
+  const p = usePalette();
+  const daily = game.mode === 'daily';
+  const countdown = useCountdown(visible && daily);
+  const won = game.status === 'won';
+  const n = game.guesses.length;
+  const mark: Mark = won ? 'hit' : 'miss';
+
+  return (
+    <Sheet visible={visible} title={won ? goalCry(n) : 'Pra fora!'} onClose={onClose}>
+      <Text style={[styles.lead, { color: p.fg }]}>
+        {won ? `Acertou em ${plural(n)}.` : `Você desistiu depois de ${plural(n)}. A palavra era:`}
+      </Text>
+      <View style={styles.answer}>
+        <MiniRow letters={displayLetters(game.answer)} marks={Array(5).fill(mark)} size={52} />
+      </View>
+      <Numbers stats={stats} daily={daily} />
+      {won && <Distribution stats={stats} highlight={n} />}
+      <SheetButton label="Mandar pros amigos" onPress={onShare} />
+      {daily ? (
+        <>
+          <Text style={[styles.countdown, { color: p.muted }]}>
+            Próxima palavra do dia em <Text style={[styles.clock, { color: p.fg }]}>{countdown}</Text>
+          </Text>
+          <SheetButton label="Jogar no modo livre" kind="ghost" onPress={onPlayFree} />
+        </>
+      ) : (
+        <SheetButton label="Nova palavra" kind="ghost" onPress={onNewWord} />
+      )}
+    </Sheet>
+  );
+}
+
 const styles = StyleSheet.create({
   text: { fontSize: 16, lineHeight: 23 },
   strong: { fontFamily: fonts.bold },

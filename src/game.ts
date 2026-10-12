@@ -131,3 +131,20 @@ export const BUCKETS = [
   { label: '15+', min: 15, max: Infinity },
 ];
 
+const plural = (n: number) => `${n} ${n === 1 ? 'chute' : 'chutes'}`;
+
+export function goalCry(chutes: number): string {
+  return 'G' + 'O'.repeat(Math.min(10, Math.max(2, 13 - chutes))) + 'L!';
+}
+
+export function shareText(game: Game): string {
+  const emoji: Record<Mark, string> = { hit: '🟩', near: '🟨', miss: '⬛' };
+  let rows = game.guesses.map((g) => score(g, game.answer).map((m) => emoji[m]).join(''));
+  if (rows.length > 9) rows = [...rows.slice(0, 4), `  ⋮ +${rows.length - 7}`, ...rows.slice(-3)];
+  const head = game.mode === 'daily' ? `Chuta Aí #${game.day + 1}` : 'Chuta Aí (modo livre)';
+  const n = game.guesses.length;
+  const result = game.status === 'won' ? `⚽ ${plural(n)}` : `🥅 desisti depois de ${plural(n)}`;
+  return [head, result, '', ...rows].join('\n');
+}
+
+export { plural };

@@ -13,6 +13,21 @@ export type Game = {
   status: Status;
 };
 
+export type ModeStats = {
+  played: number;
+  wins: number;
+  streak: number;
+  best: number;
+  lastDay: number | null;
+  /** Quantos chutes levou cada vitória (últimas 500). */
+  chutes: number[];
+};
+
+export type Stats = Record<Mode, ModeStats>;
+
+const emptyStats = (): ModeStats => ({ played: 0, wins: 0, streak: 0, best: 0, lastDay: null, chutes: [] });
+export const emptyAllStats = (): Stats => ({ daily: emptyStats(), free: emptyStats() });
+
 // Dia 1 do Chuta Aí.
 const EPOCH = new Date(2026, 9, 11);
 const DAY_MS = 86_400_000;
@@ -89,4 +104,30 @@ export function keyStates(guesses: string[], answer: string): Record<string, Mar
   }
   return states;
 }
+
+export function recordResult(stats: Stats, game: Game): Stats {
+  const s = { ...stats[game.mode], chutes: [...stats[game.mode].chutes] };
+  const won = game.status === 'won';
+  s.played += 1;
+  if (won) {
+    s.wins += 1;
+    s.chutes = [...s.chutes, game.guesses.length].slice(-500);
+  }
+  if (game.mode === 'daily') {
+    s.streak = won ? (s.lastDay === game.day - 1 ? s.streak + 1 : 1) : 0;
+    s.lastDay = game.day;
+  } else {
+    s.streak = won ? s.streak + 1 : 0;
+  }
+  s.best = Math.max(s.best, s.streak);
+  return { ...stats, [game.mode]: s };
+}
+
+export const BUCKETS = [
+  { label: '1–3', min: 1, max: 3 },
+  { label: '4–6', min: 4, max: 6 },
+  { label: '7–9', min: 7, max: 9 },
+  { label: '10–14', min: 10, max: 14 },
+  { label: '15+', min: 15, max: Infinity },
+];
 

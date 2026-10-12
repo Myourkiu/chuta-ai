@@ -52,6 +52,17 @@ haver ileso lhama potro pinto quinze treze vinte cento sagui tórax testa brega 
 chute trave
 `;
 
+// Aceitas como chute, mas nunca sorteadas (conjugações, pronomes etc.).
+const EXTRA_RAW = `
+estou estão falou fazia ficou foram havia sabia seria sejam temos tenho tinha vamos viram vimos deram disse
+posso podem devem quero achei falei fomos jogou jogue pensa pense saiba tente venha vejam chega chego comeu
+bebeu andou entra achou gosta sinto minto tenta desse dessa deste desta nesse nessa neste nesta essas esses
+estas estes todas muita pouca outra tanto tanta quais então mesma junta abriu ganha ganho perdi perde corre
+corri fugiu morre morri nasci nasce dorme durmo chora canta pulou subiu desce desci olhei olhou vemos vendo
+vindo feita visto fazem digam dizem fosse faria podia devia iria altos baixa cheia curta fraca gorda louca
+magra azuis olhos unhas costa memes reais leões anéis cores pães mães irmãs
+`;
+
 const ACCENTS: Record<string, string> = {
   á: 'a', à: 'a', â: 'a', ã: 'a', ä: 'a',
   é: 'e', è: 'e', ê: 'e', ë: 'e',
@@ -82,6 +93,13 @@ for (const w of list(ANSWERS_RAW)) {
   accented.set(n, w.toLowerCase());
   ANSWERS.push(n);
   VALID.add(n);
+}
+
+for (const w of list(EXTRA_RAW)) {
+  const n = normalize(w);
+  if (!isWord(n, 5)) continue;
+  VALID.add(n);
+  if (!accented.has(n)) accented.set(n, w.toLowerCase());
 }
 
 /** Letras para exibir num chute já enviado, com acentos quando a palavra é conhecida. */
